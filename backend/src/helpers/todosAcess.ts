@@ -1,15 +1,10 @@
 import * as AWS from 'aws-sdk'
-import * as AWSXRay from 'aws-xray-sdk'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
-import { createLogger } from '../utils/logger'
 import { TodoItem } from '../models/TodoItem'
 import { TodoUpdate } from '../models/TodoUpdate';
 import { Types } from 'aws-sdk/clients/s3';   //added import
 
 
-const XAWS = AWSXRay.captureAWS(AWS)
-
-const logger = createLogger('TodosAccess')
 
 // TODO: Implement the dataLayer logic
 
@@ -21,7 +16,7 @@ export class ToDoAccess {
         private readonly s3Client: Types = new AWS.S3({ signatureVersion: 'v4' }),
         private readonly todoTable = process.env.TODOS_TABLE,
         private readonly s3BucketName = process.env.S3_BUCKET_NAME,
-        private readonly urlExpiration = process.env.SIGNED_URL_EXPIRATION) {
+        private readonly signedurlExpiration = process.env.SIGNED_URL_EXPIRATION) {
     }
 
     async getAllToDo(userId: string): Promise<TodoItem[]> {
@@ -123,7 +118,7 @@ export class ToDoAccess {
         return this.s3Client.getSignedUrl('putObject', {
           Bucket: this.s3BucketName,
           Key: bucketKey,
-          Expires: this.urlExpiration
+          Expires: this.signedurlExpiration
         })
       }
 
