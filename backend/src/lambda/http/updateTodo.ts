@@ -1,12 +1,7 @@
 import 'source-map-support/register'
-
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
-import * as middy from 'middy'
-import { cors, httpErrorHandler } from 'middy/middlewares'
-
 import { updateToDo } from '../../helpers/todos'
 import { UpdateTodoRequest } from '../../requests/UpdateTodoRequest'
-import { getUserId } from '../utils'
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     //const todoId = event.pathParameters.todoId
@@ -15,12 +10,14 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
     //
     console.log("Processing Event ", event);
-    const userId = getUserId(event)
+    const authorization = event.headers.Authorization;
+    const split = authorization.split(' ');
+    const jwtToken = split[1];
 
     const todoId = event.pathParameters.todoId;
     const updatedTodo: UpdateTodoRequest = JSON.parse(event.body);
 
-    const toDoItem = await updateToDo(updatedTodo, todoId, userId);
+    const todoItem = await updateToDo(updatedTodo, todoId, jwtToken);
 
     return {
         statusCode: 200,
@@ -28,7 +25,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
             "Access-Control-Allow-Origin": "*",
         },
         body: JSON.stringify({
-            "item": toDoItem
+            "item": todoItem
         }),
     };
 
