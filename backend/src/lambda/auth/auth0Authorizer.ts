@@ -1,19 +1,20 @@
 import { CustomAuthorizerEvent, CustomAuthorizerResult } from 'aws-lambda'
 import 'source-map-support/register'
-
 import { verify, decode } from 'jsonwebtoken'
 import { createLogger } from '../../utils/logger'
 import Axios from 'axios'
 import { Jwt } from '../../auth/Jwt'
 import { JwtPayload } from '../../auth/JwtPayload'
 
-const logger = createLogger('auth')
+
 
 // TODO: Provide a URL that can be used to download a certificate that can be used
 // to verify JWT token signature.
 // To get this URL you need to go to an Auth0 page -> Show Advanced Settings -> Endpoints -> JSON Web Key Set
-const jwksUrl = 'https://dev-bob03cds.us.auth0.com/.well-known/jwks.json';
 
+const logger = createLogger('auth')
+const jwksUrl = 'https://dev-bob03cds.us.auth0.com/.well-known/jwks.json'
+ 
 export const handler = async (
   event: CustomAuthorizerEvent
 ): Promise<CustomAuthorizerResult> => {
@@ -56,7 +57,6 @@ export const handler = async (
 
 //async function verifyTokenn(authHeader: string): Promise<JwtPayload> {
 //  const token = getToken(authHeader)
-//  const jwt: Jwt = decode(token, { complete: true }) as Jwt
 
   // TODO: Implement token verification
   // You should implement it similarly to how it was implemented for the exercise for the lesson 5
@@ -67,12 +67,13 @@ export const handler = async (
 //added code1
 async function verifyToken(authHeader: string): Promise<JwtPayload> {
   try {
-
     const token = getToken(authHeader)
+    const jwt: Jwt = decode(token, { complete: true }) as Jwt
     const res = await Axios.get(jwksUrl);
+    const keys = res.data.keys;
+    const signKey = keys.find(key => key.use === 'sig' && key.kty === 'RSA' && key.kid === jwt.header.kid)
 
-    const pemData = res['data']['keys'][0]['x5c'][0]
-    const cert = `-----BEGIN CERTIFICATE-----\n${pemData}\n-----END CERTIFICATE-----`
+    const cert: string = `-----BEGIN CERTIFICATE-----\n${signKey.x5c[0]}\n-----END CERTIFICATE-----\n`
 
     return verify(token, cert, { algorithms: ['RS256'] }) as JwtPayload
   } catch(err){

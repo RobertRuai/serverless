@@ -1,28 +1,30 @@
 import 'source-map-support/register'
-import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
-import { getAllToDo } from '../../helpers/todos'
+
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
+import * as middy from 'middy'
+import { cors } from 'middy/middlewares'
+
+import { getTodosForUser as getTodosForUser } from '../../businessLogic/todos'
+import { getUserId } from '../utils';
 
 // TODO: Get all TODO items for a current user
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+export const handler = middy(
+  async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     // Write your code here
-    //const todos = '...'
-
-    //added code
-    console.log("Processing Event ", event);
-    const authorization = event.headers.Authorization;
-    const split = authorization.split(' ');
-    const jwtToken = split[1];
-
-    const todos = await getAllToDo(jwtToken);
+    const userId = getUserId(event);
+    const todos = await getTodosForUser(userId)
 
     return {
-        statusCode: 200,
-        headers: {
-            "Access-Control-Allow-Origin": "*",
-        },
-        body: JSON.stringify({
-            "items": todos,
-        }),
-    };
-  
+      statusCode: 200,
+      body: JSON.stringify({
+        items: todos.Items
+      })
+    }
   }
+)
+
+handler.use(
+  cors({
+    credentials: true
+  })
+)
