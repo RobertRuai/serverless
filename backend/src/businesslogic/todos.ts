@@ -11,7 +11,7 @@ import * as uuid from 'uuid'
 const toDosAccess = new ToDoAccess();
 const attachmentUtils = new AttachmentUtils()
 
-const s3BucketName = process.env.S3_BUCKET_NAME
+const s3BucketName = process.env.ATTACHMENT_S3_BUCKET
 const signedurlExpiration = process.env.SIGNED_URL_EXPIRATION
 
 const logger = createLogger('TodosAccess')
@@ -42,7 +42,7 @@ export const getTodosForUser = async (userId: string) => {
 
 export const createAttachmentPresignedUrl = async (todoId: string): Promise<string> => {
     logger.info('creating attachment signed url')
-    return await attachmentUtils.getSignedUrl(s3BucketName, todoId, signedurlExpiration)
+    return await attachmentUtils.getUploadUrl(s3BucketName, todoId, signedurlExpiration)
 }
 
 

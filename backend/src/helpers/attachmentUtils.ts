@@ -11,7 +11,7 @@ export class AttachmentUtils {
         private readonly s3Client = new XAWS.S3({ signatureVersion: 'v4' })) {
     }
 
-    async getSignedUrl(s3BucketName: string,todoId: string, signedurlExpiration: string): Promise<string> {
+    async getUploadUrl(s3BucketName: string,todoId: string, signedurlExpiration: string): Promise<string> {
         return this.s3Client.getSignedUrl('putObject', {
           Bucket: s3BucketName,
           Key: todoId,
@@ -19,5 +19,4 @@ export class AttachmentUtils {
         })
       }
 
-    
 }

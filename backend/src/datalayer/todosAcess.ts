@@ -16,8 +16,6 @@ const logger = createLogger('TodosAccess')
 
 // TODO: Implement the dataLayer logic
 
-//added all code
-
 export class ToDoAccess {
     constructor(
         private readonly docClient: DocumentClient = new XAWS.DynamoDB.DocumentClient(),
