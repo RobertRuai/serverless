@@ -1,4 +1,5 @@
 import { ToDoAccess } from '../datalayer/todosAcess'
+import { AttachmentUtils } from '../helpers/attachmentUtils';
 import { TodoItem } from '../models/TodoItem'
 import { CreateTodoRequest } from '../requests/CreateTodoRequest'
 import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
@@ -8,7 +9,11 @@ import * as uuid from 'uuid'
 // TODO: Implement businessLogic
  //all added code
 const toDosAccess = new ToDoAccess();
+const attachmentUtils = new AttachmentUtils()
 
+
+const bucketName = process.env.ATTACHMENT_S3_BUCKET
+const urlExpiration = process.env.SIGNED_URL_EXPIRATION
 
 const logger = createLogger('TodosAccess')
 
@@ -21,6 +26,7 @@ export const createToDo = async (createTodoRequest: CreateTodoRequest, userId: s
         name: createTodoRequest.name,
         dueDate: createTodoRequest.dueDate,
         done: false,
+        attachmentUrl: `https://${bucketName}.s3.amazonaws.com/${todoId}`
     }
 
     logger.info('creating todo' + JSON.stringify(newTodo))
@@ -35,11 +41,9 @@ export const getTodosForUser = async (userId: string) => {
     return await toDosAccess.getTodosForUser(userId);
 }
 
-export const generateUploadUrl = async (userId: string, todoId: string): Promise<string> => {
-  const uploadUrl = await toDosAccess.getSignedUrl(todoId)
-  await toDosAccess.updateAttachmentUrl(userId, todoId)
-
-  return uploadUrl
+export const createAttachmentPresignedUrl = async (todoId: string): Promise<string> => {
+    logger.info('creating attachment signed url')
+    return await attachmentUtils.getUploadUrl(bucketName, todoId, urlExpiration)
 }
 
 

@@ -1,7 +1,7 @@
 # TODO: Change the name of the org 
 org: roberto77
 app: serverless
-service: serverlessTodoApp
+service: serverlessTodoApp2
 
 plugins:
   - serverless-webpack
